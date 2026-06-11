@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'details_movies.dart';
+import 'favorites_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -105,6 +106,30 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.bookmark,
+              color: Colors.indigo,
+            ),
+            tooltip: 'Film Favorit',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FavoritesPage(
+                    allMovies: _movies,
+                    favorites: _favorites,
+                    onToggleFavorite: _toggleFavorite,
+                  ),
+                ),
+              ).then((_) {
+                // Refresh home page in case favorites changed inside FavoritesPage
+                setState(() {});
+              });
+            },
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
           child: Container(
