@@ -1,37 +1,14 @@
 import 'package:flutter/material.dart';
-import 'main.dart'; // To access the Movie class
+import 'movie_model.dart';
+import 'favorite_bloc.dart';
 
-class MovieDetailPage extends StatefulWidget {
+class MovieDetailPage extends StatelessWidget {
   final Movie movie;
-  final bool isFavoriteInitially;
-  final VoidCallback onFavoriteToggle;
 
   const MovieDetailPage({
     super.key,
     required this.movie,
-    required this.isFavoriteInitially,
-    required this.onFavoriteToggle,
   });
-
-  @override
-  State<MovieDetailPage> createState() => _MovieDetailPageState();
-}
-
-class _MovieDetailPageState extends State<MovieDetailPage> {
-  late bool _isFavorite;
-
-  @override
-  void initState() {
-    super.initState();
-    _isFavorite = widget.isFavoriteInitially;
-  }
-
-  void _toggleFavorite() {
-    setState(() {
-      _isFavorite = !_isFavorite;
-    });
-    widget.onFavoriteToggle();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,15 +34,26 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 8.0, top: 8.0, bottom: 8.0),
-                child: CircleAvatar(
-                  backgroundColor: Colors.black38,
-                  child: IconButton(
-                    icon: Icon(
-                      _isFavorite ? Icons.bookmark : Icons.bookmark_border,
-                      color: _isFavorite ? Colors.amber : Colors.white,
-                    ),
-                    onPressed: _toggleFavorite,
-                  ),
+                child: StreamBuilder<Set<String>>(
+                  stream: FavoriteBloc.instance.favoritesStream,
+                  initialData: FavoriteBloc.instance.currentFavorites,
+                  builder: (context, snapshot) {
+                    final favorites = snapshot.data ?? {};
+                    final isFavorite = favorites.contains(movie.title);
+
+                    return CircleAvatar(
+                      backgroundColor: Colors.black38,
+                      child: IconButton(
+                        icon: Icon(
+                          isFavorite ? Icons.bookmark : Icons.bookmark_border,
+                          color: isFavorite ? Colors.amber : Colors.white,
+                        ),
+                        onPressed: () {
+                          FavoriteBloc.instance.toggleFavorite(movie.title);
+                        },
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
@@ -74,9 +62,9 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                 fit: StackFit.expand,
                 children: [
                   Hero(
-                    tag: 'movie-image-${widget.movie.title}',
+                    tag: 'movie-image-${movie.title}',
                     child: Image.network(
-                      widget.movie.imageUrl,
+                      movie.imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
@@ -109,7 +97,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 Text(
-                  widget.movie.title,
+                  movie.title,
                   style: const TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
@@ -119,7 +107,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  widget.movie.genre,
+                  movie.genre,
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -135,19 +123,19 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                       icon: Icons.star,
                       iconColor: Colors.amber,
                       label: 'Rating',
-                      value: '${widget.movie.rating} / 10',
+                      value: '${movie.rating} / 10',
                     ),
                     _buildMetaCard(
                       icon: Icons.calendar_month,
                       iconColor: Colors.blueAccent,
                       label: 'Rilis',
-                      value: widget.movie.date,
+                      value: movie.date,
                     ),
                     _buildMetaCard(
                       icon: Icons.timer,
                       iconColor: Colors.deepPurpleAccent,
                       label: 'Durasi',
-                      value: widget.movie.duration,
+                      value: movie.duration,
                     ),
                   ],
                 ),
@@ -164,7 +152,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  widget.movie.synopsis,
+                  movie.synopsis,
                   style: const TextStyle(
                     fontSize: 15,
                     color: Colors.black54,
@@ -222,3 +210,4 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     );
   }
 }
+
