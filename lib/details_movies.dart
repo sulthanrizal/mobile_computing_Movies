@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'movie_model.dart';
 import 'favorite_bloc.dart';
+import 'movie_service.dart';
 
 class MovieDetailPage extends StatelessWidget {
   final Movie movie;
@@ -131,11 +132,17 @@ class MovieDetailPage extends StatelessWidget {
                       label: 'Rilis',
                       value: movie.date,
                     ),
-                    _buildMetaCard(
-                      icon: Icons.timer,
-                      iconColor: Colors.deepPurpleAccent,
-                      label: 'Durasi',
-                      value: movie.duration,
+                    FutureBuilder<String>(
+                      future: MovieService().fetchDuration(movie.id),
+                      initialData: movie.duration,
+                      builder: (context, snapshot) {
+                        return _buildMetaCard(
+                          icon: Icons.timer,
+                          iconColor: Colors.deepPurpleAccent,
+                          label: 'Durasi',
+                          value: snapshot.data ?? movie.duration,
+                        );
+                      },
                     ),
                   ],
                 ),
